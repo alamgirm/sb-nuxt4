@@ -1,0 +1,60 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: sb-rest
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Azure AD Configuration
+azure:
+  activedirectory:
+    tenant-id: ${AZURE_TENANT_ID:your-tenant-id}
+    client-id: ${AZURE_CLIENT_ID:your-client-id}
+    app-id-uri: ${AZURE_APP_ID_URI:api://your-client-id}
+
+# Security Configuration
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${azure.activedirectory.tenant-id}/v2.0
+          jwk-set-uri: https://login.microsoftonline.com/${azure.activedirectory.tenant-id}/discovery/v2.0/keys
+
+# CORS Configuration
+cors:
+  allowed-origins: 
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+
+logging:
+  level:
+    com.example.sbrest: DEBUG
+    org.springframework.security: DEBUG
