@@ -30,20 +30,22 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         String azureOid = jwt.getClaimAsString("oid");
         String name = jwt.getClaimAsString("name");
-        String email = jwt.getClaimAsString("preferred_username");
+        String email = jwt.getClaimAsString("unique_name");
+        String scope = jwt.getClaimAsString("scp");
         
         // Create or update user in database
-        User user = userService.createOrUpdateUserFromAzure(azureOid, name, email);
+        //User user = userService.createOrUpdateUserFromAzure(azureOid, name, email);
         
         Map<String, Object> response = Map.of(
-            "id", user.getId(),
-            "name", user.getName(),
-            "email", user.getEmail(),
-            "azureOid", user.getAzureOid(),
-            "department", user.getDepartment() != null ? user.getDepartment() : "",
-            "jobTitle", user.getJobTitle() != null ? user.getJobTitle() : "",
-            "createdAt", user.getCreatedAt(),
-            "updatedAt", user.getUpdatedAt()
+            "name", name,
+            "email", email,
+            "azureOid", azureOid,
+            "scope", scope
+
+//            "department", user.getDepartment() != null ? user.getDepartment() : "",
+//            "jobTitle", user.getJobTitle() != null ? user.getJobTitle() : "",
+//            "createdAt", user.getCreatedAt(),
+//            "updatedAt", user.getUpdatedAt()
         );
         
         return ResponseEntity.ok(response);

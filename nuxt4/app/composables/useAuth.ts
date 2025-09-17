@@ -1,93 +1,30 @@
-import { ref, readonly } from 'vue'
-import { PublicClientApplication, type Configuration, type AccountInfo, type SilentRequest, type RedirectRequest } from '@azure/msal-browser'
-
-// Simple global state - no reactive dependencies
-let msalInstance: PublicClientApplication | null = null
-let isInitialized = false
-
-// Global reactive state
-const user = ref<AccountInfo | null>(null)
-const isAuthenticated = ref(false)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
-const isClient = ref(process.client)
-
-// Initialize MSAL only once
-const initMsal = async () => {
-  if (isInitialized || !process.client) return
-  
-  try {
-    console.log('Initializing MSAL...')
-    const config = useRuntimeConfig()
-    
-    const msalConfig: Configuration = {
-      auth: {
-        clientId: config.public.msal.clientId,
-        authority: config.public.msal.authority,
-        redirectUri: config.public.msal.redirectUri,
-      },
-      cache: {
-        cacheLocation: 'sessionStorage',
-        storeAuthStateInCookie: false,
-      },
-    }
-
-    msalInstance = new PublicClientApplication(msalConfig)
-    await msalInstance.initialize()
-    
-    // Handle redirect result
-    const response = await msalInstance.handleRedirectPromise()
-    if (response?.account) {
-      user.value = response.account
-      isAuthenticated.value = true
-      console.log('Authentication successful from redirect')
-    } else {
-      // Check for existing accounts
-      const accounts = msalInstance.getAllAccounts()
-      if (accounts.length > 0) {
-        user.value = accounts[0]
-        isAuthenticated.value = true
-        console.log('Found existing account')
-      }
-    }
-    
-    isInitialized = true
-    console.log('MSAL initialization complete')
-  } catch (err) {
-    console.error('MSAL initialization error:', err)
-    error.value = 'Failed to initialize authentication'
-  }
-}
+import { type AccountInfo, type SilentRequest, type RedirectRequest } from '@azure/msal-browser'
 
 export const useAuth = () => {
-  // Initialize MSAL if not already done
-  if (!isInitialized && process.client) {
-    initMsal()
-  }
+  const { $msal, $msalConfig, $authState } = useNuxtApp()
 
   const login = async (loginType: 'redirect' | 'popup' = 'redirect') => {
-    if (!msalInstance) {
+    if (!$msal) {
       console.error('MSAL not initialized')
       return
     }
 
     try {
-      isLoading.value = true
-      error.value = null
+      $authState.isLoading.value = true
+      $authState.error.value = null
 
-      const config = useRuntimeConfig()
       const loginRequest: RedirectRequest = {
-        scopes: ['openid', 'profile', 'email', config.public.msal.apiScope],
+        scopes: ['openid', 'profile', 'email', $msalConfig.apiScope],
         prompt: 'select_account'
       }
 
       if (loginType === 'redirect') {
-        await msalInstance.loginRedirect(loginRequest)
+        await $msal.loginRedirect(loginRequest)
       } else {
-        const response = await msalInstance.loginPopup(loginRequest)
+        const response = await $msal.loginPopup(loginRequest)
         if (response.account) {
-          user.value = response.account
-          isAuthenticated.value = true
+          $authState.user.value = response.account
+          $authState.isAuthenticated.value = true
         }
       }
     } catch (err: any) {
@@ -95,42 +32,41 @@ export const useAuth = () => {
         console.log('Authentication interaction already in progress')
         return
       }
-      error.value = 'Login failed'
+      $authState.error.value = 'Login failed'
       console.error('Login error:', err)
     } finally {
-      isLoading.value = false
+      $authState.isLoading.value = false
     }
   }
 
   const logout = async () => {
-    if (!msalInstance) return
+    if (!$msal) return
 
     try {
-      isLoading.value = true
-      await msalInstance.logoutRedirect({
-        account: user.value
+      $authState.isLoading.value = true
+      await $msal.logoutRedirect({
+        account: $authState.user.value
       })
-      user.value = null
-      isAuthenticated.value = false
+      $authState.user.value = null
+      $authState.isAuthenticated.value = false
     } catch (err) {
-      error.value = 'Logout failed'
+      $authState.error.value = 'Logout failed'
       console.error('Logout error:', err)
     } finally {
-      isLoading.value = false
+      $authState.isLoading.value = false
     }
   }
 
   const getAccessToken = async (): Promise<string | null> => {
-    if (!msalInstance || !user.value) return null
+    if (!$msal || !$authState.user.value) return null
 
     try {
-      const config = useRuntimeConfig()
       const silentRequest: SilentRequest = {
-        scopes: [config.public.msal.apiScope],
-        account: user.value
+        scopes: [$msalConfig.apiScope],
+        account: $authState.user.value
       }
 
-      const response = await msalInstance.acquireTokenSilent(silentRequest)
+      const response = await $msal.acquireTokenSilent(silentRequest)
       return response.accessToken
     } catch (err) {
       console.error('Token acquisition error:', err)
@@ -138,14 +74,30 @@ export const useAuth = () => {
     }
   }
 
+  // Wait for initialization to complete
+  const waitForInit = async (): Promise<void> => {
+    if (!$msal) {
+      return new Promise((resolve) => {
+        const checkMsal = () => {
+          if ($msal) {
+            resolve()
+          } else {
+            setTimeout(checkMsal, 10)
+          }
+        }
+        checkMsal()
+      })
+    }
+  }
+
   return {
-    user: readonly(user),
-    isAuthenticated: readonly(isAuthenticated),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    isClient: readonly(isClient),
+    user: $authState.user,
+    isAuthenticated: $authState.isAuthenticated,
+    isLoading: $authState.isLoading,
+    error: $authState.error,
     login,
     logout,
-    getAccessToken
+    getAccessToken,
+    waitForInit
   }
 }

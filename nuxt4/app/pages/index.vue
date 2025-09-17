@@ -11,7 +11,7 @@
             This is a sample application demonstrating Microsoft Authentication Library (MSAL) integration with Nuxt 4.
           </p>
           
-          <div v-if="!isClient" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div v-if="isLoading" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
             <h2 class="text-lg font-medium text-yellow-800 mb-2">Loading...</h2>
             <p class="text-yellow-700">Initializing authentication...</p>
           </div>
@@ -45,8 +45,8 @@
               >
                 Test Auth
               </button>
-              <div v-if="!isClient" class="text-xs text-gray-500">
-                Client-side authentication initializing...
+              <div v-if="isLoading" class="text-xs text-gray-500">
+                Authentication initializing...
               </div>
             </div>
           </div>
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-const { isAuthenticated, user, isLoading, isClient, login } = useAuth()
+const { isAuthenticated, user, isLoading, login } = useAuth()
 
 const testAuth = async () => {
   console.log('🧪 Test Auth button clicked')

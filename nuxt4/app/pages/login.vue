@@ -3,13 +3,20 @@
 </template>
 
 <script setup lang="ts">
-const { isAuthenticated } = useAuth()
+import { onMounted } from 'vue'
 
+const { isAuthenticated, waitForInit } = useAuth()
+
+// Wait for initialization to complete, then check auth status
 onMounted(async () => {
- if (isAuthenticated.value) {
-  console.log('Already authenticated, redirecting to home')
-  navigateTo('/')
- }
+  console.log('Login page mounted, waiting for auth initialization...')
+  await waitForInit()
+  
+  if (isAuthenticated.value) {
+    console.log('Already authenticated, redirecting to home')
+    navigateTo('/')
+  } else {
+    console.log('Not authenticated, staying on login page')
+  }
 })
-// This page uses the LoginForm component
 </script>
