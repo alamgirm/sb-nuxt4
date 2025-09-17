@@ -37,6 +37,7 @@
 const { login, isLoading, error } = useAuth()
 
 const handleLogin = async () => {
+  if (isLoading.value) return // Prevent multiple clicks
   await login('redirect')
 }
 </script>

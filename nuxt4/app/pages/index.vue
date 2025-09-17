@@ -11,7 +11,12 @@
             This is a sample application demonstrating Microsoft Authentication Library (MSAL) integration with Nuxt 4.
           </p>
           
-          <div v-if="isAuthenticated" class="bg-green-50 border border-green-200 rounded-md p-4">
+          <div v-if="!isClient" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+            <h2 class="text-lg font-medium text-yellow-800 mb-2">Loading...</h2>
+            <p class="text-yellow-700">Initializing authentication...</p>
+          </div>
+          
+          <div v-else-if="isAuthenticated" class="bg-green-50 border border-green-200 rounded-md p-4">
             <h2 class="text-lg font-medium text-green-800 mb-2">Authentication Status</h2>
             <p class="text-green-700">You are successfully authenticated!</p>
             <div class="mt-2">
@@ -27,12 +32,23 @@
           <div v-else class="bg-blue-50 border border-blue-200 rounded-md p-4">
             <h2 class="text-lg font-medium text-blue-800 mb-2">Get Started</h2>
             <p class="text-blue-700 mb-4">Please log in to access protected features.</p>
-            <NuxtLink
-              to="/login"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Login with Microsoft
-            </NuxtLink>
+            <div class="space-y-2">
+              <NuxtLink
+                to="/login"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium inline-block"
+              >
+                Login with Microsoft
+              </NuxtLink>
+              <button
+                @click="testAuth"
+                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium inline-block ml-2"
+              >
+                Test Auth
+              </button>
+              <div v-if="!isClient" class="text-xs text-gray-500">
+                Client-side authentication initializing...
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -41,5 +57,11 @@
 </template>
 
 <script setup lang="ts">
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, user, isLoading, isClient, login } = useAuth()
+
+const testAuth = async () => {
+  console.log('🧪 Test Auth button clicked')
+  await login('redirect')
+  console.log('🧪 Test Auth completed')
+}
 </script>

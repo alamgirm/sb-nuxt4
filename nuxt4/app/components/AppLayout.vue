@@ -40,5 +40,11 @@
 </template>
 
 <script setup lang="ts">
-const { user, isAuthenticated, logout } = useAuth()
+import { ref } from 'vue'
+
+// Temporarily disabled to prevent loops
+// const { user, isAuthenticated, logout } = useAuth()
+const user = ref(null)
+const isAuthenticated = ref(false)
+const logout = () => console.log('Logout clicked')
 </script>

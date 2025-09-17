@@ -5,11 +5,6 @@
 </template>
 
 <script setup lang="ts">
-// Initialize auth on app start
-const { initializeAuth, handleRedirectResult } = useAuth()
-
-onMounted(async () => {
-  await initializeAuth()
-  await handleRedirectResult()
-})
+// App.vue - no authentication initialization here
+console.log('🚀 App.vue script setup')
 </script>
