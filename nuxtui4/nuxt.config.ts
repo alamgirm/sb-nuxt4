@@ -24,5 +24,28 @@ export default defineNuxtConfig({
   },
 
   // Ensure components are auto-imported
-  components: true
+  components: true,
+
+  // NuxtUI v4 configuration
+  ui: {
+    colors: {
+      primary: {
+        50: '#eff6ff',
+        100: '#dbeafe',
+        200: '#bfdbfe',
+        300: '#93c5fd',
+        400: '#60a5fa',
+        500: '#003478', // Ford Blue
+        600: '#002d66',
+        700: '#002554',
+        800: '#001d42',
+        900: '#001530',
+        950: '#000d1a'
+      },
+      neutral: 'slate'
+    }
+  },
+
+  // Custom CSS variables for Ford blue
+  css: ['~/assets/css/main.css']
 })

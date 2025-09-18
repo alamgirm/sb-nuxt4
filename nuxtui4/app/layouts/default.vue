@@ -1,21 +1,29 @@
 <template>
   <div class="layout-container">
-    <!-- Sidebar -->
-    <AppSidebar :is-open="sidebarOpen" @toggle="toggleSidebar" />
-    
-    <!-- Header -->
-    <AppHeader :sidebar-open="sidebarOpen" @toggle-sidebar="toggleSidebar" />
-    
-    <!-- Main Content -->
-    <main :class="['main-content', { 'sidebar-closed': !sidebarOpen }]">
-      <div class="content-area">
-        <slot />
-      </div>
-    </main>
+    <!-- Nuxt Loading Indicator -->
+    <NuxtLoadingIndicator color="#003478" :height="3" />
+
+    <!-- Header - Full width at top -->
+    <AppHeader />
+
+    <!-- Main Layout - Below header -->
+    <div class="main-layout">
+      <!-- Sidebar - Left side -->
+      <AppSidebar />
+
+      <!-- Main Content - Right side -->
+      <main class="main-content">
+        <div class="content-area">
+          <slot />
+        </div>
+        
+        <!-- Footer - Inside main content but below sidebar -->
+        <AppFooter />
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const themeStore = useThemeStore()
-const { sidebarOpen, toggleSidebar } = storeToRefs(themeStore)
+// Layout component - no sidebar toggling needed
 </script>
